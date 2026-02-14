@@ -45,9 +45,10 @@ export function VoiceCoach({ feedback, currentLetter, status, isTracking }: Voic
   const prevStatusRef = useRef<GestureStatus>('no-hand');
   const prevLetterRef = useRef(currentLetter);
   const hasGreetedRef = useRef(false);
-  const incorrectCountRef = useRef(0);
   const lastFeedbackKeyRef = useRef('');
   const speakingRef = useRef(false);
+  const incorrectSinceRef = useRef<number>(0); // timestamp when incorrect started
+  const lastEncourageRef = useRef<number>(0); // timestamp of last encouragement
 
   const speak = useCallback(async (text: string) => {
     if (muted || !text) return;
@@ -118,7 +119,6 @@ export function VoiceCoach({ feedback, currentLetter, status, isTracking }: Voic
   useEffect(() => {
     if (isTracking && !hasGreetedRef.current && !muted) {
       hasGreetedRef.current = true;
-      incorrectCountRef.current = 0;
       speak(`Welcome to Sign Sight! Show your hand to the camera and let's practice the letter ${currentLetter}. I'll guide you through it.`);
     }
     if (!isTracking) {
@@ -126,7 +126,7 @@ export function VoiceCoach({ feedback, currentLetter, status, isTracking }: Voic
     }
   }, [isTracking, muted, currentLetter, speak]);
 
-  // Reactive coaching on every status/feedback change
+  // Reactive coaching on status/feedback changes
   useEffect(() => {
     if (!isTracking || muted) return;
 
@@ -135,14 +135,13 @@ export function VoiceCoach({ feedback, currentLetter, status, isTracking }: Voic
 
     clearTimeout(debounceRef.current);
 
-    // Build a key from the current feedback to detect real changes
     const feedbackKey = feedback.join('|');
     const feedbackChanged = feedbackKey !== lastFeedbackKeyRef.current;
     lastFeedbackKeyRef.current = feedbackKey;
 
     // ---- NO HAND ----
     if (status === 'no-hand' && prev !== 'no-hand') {
-      incorrectCountRef.current = 0;
+      incorrectSinceRef.current = 0;
       debounceRef.current = setTimeout(() => {
         speak(pickRandom(NO_HAND_PHRASES));
       }, 2000);
@@ -151,7 +150,7 @@ export function VoiceCoach({ feedback, currentLetter, status, isTracking }: Voic
 
     // ---- CORRECT ----
     if (status === 'correct' && prev !== 'correct') {
-      incorrectCountRef.current = 0;
+      incorrectSinceRef.current = 0;
       speak(pickRandom(CORRECT_PHRASES));
       return;
     }
@@ -173,30 +172,35 @@ export function VoiceCoach({ feedback, currentLetter, status, isTracking }: Voic
 
     // ---- INCORRECT ----
     if (status === 'incorrect') {
-      incorrectCountRef.current++;
+      const now = Date.now();
       const tips = feedback.filter(f => !f.includes('Almost') && !f.includes('Perfect'));
 
       if (prev !== 'incorrect') {
         // Just transitioned to incorrect — give immediate specific feedback
+        incorrectSinceRef.current = now;
+        lastEncourageRef.current = now;
         debounceRef.current = setTimeout(() => {
           if (tips.length > 0) {
             speak(`Not quite right. ${tips[0]}. ${tips.length > 1 ? `Also, ${tips[1].toLowerCase()}.` : ''}`);
+          } else {
+            speak('That doesn\'t look right. Check the reference image and try again.');
           }
-        }, 1500);
+        }, 1200);
       } else if (feedbackChanged) {
         // Feedback changed while still incorrect — user is adjusting, give updated tips
         debounceRef.current = setTimeout(() => {
           if (tips.length > 0) {
             speak(`Try to ${tips[0].toLowerCase()}.`);
           }
-        }, 3000);
-      } else if (incorrectCountRef.current > 0 && incorrectCountRef.current % 8 === 0) {
-        // User stuck for a while — give encouragement
+        }, 2000);
+      } else if (incorrectSinceRef.current > 0 && (now - lastEncourageRef.current) > 8000) {
+        // User stuck for 8+ seconds — give encouragement
+        lastEncourageRef.current = now;
         debounceRef.current = setTimeout(() => {
           if (tips.length > 0) {
             speak(`${pickRandom(ENCOURAGE_PHRASES)} Focus on this: ${tips[0].toLowerCase()}.`);
           }
-        }, 3000);
+        }, 500);
       }
       return;
     }
@@ -207,7 +211,7 @@ export function VoiceCoach({ feedback, currentLetter, status, isTracking }: Voic
     if (!isTracking || muted) return;
     if (currentLetter !== prevLetterRef.current) {
       prevLetterRef.current = currentLetter;
-      incorrectCountRef.current = 0;
+      incorrectSinceRef.current = 0;
       clearTimeout(debounceRef.current);
       debounceRef.current = setTimeout(() => {
         speak(`Next up: the letter ${currentLetter}. Show me the sign!`);
