@@ -4,6 +4,7 @@ import { GestureDisplay } from '@/components/sign-sight/GestureDisplay';
 import { WebcamFeed } from '@/components/sign-sight/WebcamFeed';
 import { FeedbackBar } from '@/components/sign-sight/FeedbackBar';
 import { ScorePanel } from '@/components/sign-sight/ScorePanel';
+import { VoiceCoach } from '@/components/sign-sight/VoiceCoach';
 import { useHandTracking } from '@/hooks/use-hand-tracking';
 import { useGame, type GameMode } from '@/hooks/use-game';
 
@@ -60,7 +61,12 @@ const Index = () => {
               onStart={startTracking}
               onStop={stopTracking}
             />
-            <FeedbackBar feedback={game.feedback} status={game.status} />
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex-1">
+                <FeedbackBar feedback={game.feedback} status={game.status} />
+              </div>
+              <VoiceCoach feedback={game.feedback} currentLetter={game.currentLetter} />
+            </div>
           </div>
         </div>
       </main>

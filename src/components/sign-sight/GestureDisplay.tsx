@@ -32,7 +32,7 @@ export function GestureDisplay({
     <div className="space-y-4">
       {/* Letter Selector (Learn mode) */}
       {mode === 'learn' && (
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-1.5">
           {GESTURE_LIBRARY.map((g) => {
             const isActive = g.letter === currentLetter;
             const isDone = completedLetters.has(g.letter);
@@ -40,7 +40,7 @@ export function GestureDisplay({
               <button
                 key={g.letter}
                 onClick={() => onSelectLetter(g.letter)}
-                className={`relative flex h-10 w-10 items-center justify-center rounded-lg font-heading text-sm font-bold transition-all ${
+                className={`relative flex h-8 w-8 items-center justify-center rounded-md font-heading text-xs font-bold transition-all ${
                   isActive
                     ? 'bg-primary text-primary-foreground glow-primary'
                     : isDone
@@ -50,7 +50,7 @@ export function GestureDisplay({
               >
                 {g.letter}
                 {isDone && !isActive && (
-                  <span className="absolute -right-0.5 -top-0.5 flex h-3 w-3 items-center justify-center rounded-full bg-success text-[8px] text-success-foreground">
+                  <span className="absolute -right-0.5 -top-0.5 flex h-2.5 w-2.5 items-center justify-center rounded-full bg-success text-[7px] text-success-foreground">
                     ✓
                   </span>
                 )}
@@ -68,29 +68,27 @@ export function GestureDisplay({
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -10 }}
           transition={{ duration: 0.25 }}
-          className={`glass-card border ${statusBorder} p-6 transition-all duration-300`}
+          className={`glass-card border ${statusBorder} p-5 transition-all duration-300`}
         >
-          <div className="flex items-start gap-5">
-            {/* Large Letter */}
-            <div className="flex h-24 w-24 flex-shrink-0 items-center justify-center rounded-2xl bg-primary/10 border border-primary/20">
-              <span className="font-heading text-5xl font-bold text-gradient-primary">
+          <div className="flex items-start gap-4">
+            <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-xl bg-primary/10 border border-primary/20">
+              <span className="font-heading text-3xl font-bold text-gradient-primary">
                 {gesture.letter}
               </span>
             </div>
 
-            {/* Instructions */}
-            <div className="flex-1 space-y-3">
+            <div className="flex-1 space-y-2">
               <div>
-                <h2 className="font-heading text-xl font-bold text-foreground">
+                <h2 className="font-heading text-lg font-bold text-foreground">
                   Letter {gesture.letter}
                 </h2>
-                <p className="mt-1 text-sm text-muted-foreground">{gesture.description}</p>
+                <p className="mt-0.5 text-xs text-muted-foreground">{gesture.description}</p>
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-1">
                 {gesture.instructions.map((inst, i) => (
-                  <div key={i} className="flex items-start gap-2 text-sm text-secondary-foreground">
-                    <span className="mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-primary/10 text-[10px] font-bold text-primary">
+                  <div key={i} className="flex items-start gap-2 text-xs text-secondary-foreground">
+                    <span className="mt-0.5 flex h-4 w-4 flex-shrink-0 items-center justify-center rounded-full bg-primary/10 text-[9px] font-bold text-primary">
                       {i + 1}
                     </span>
                     {inst}
@@ -100,9 +98,8 @@ export function GestureDisplay({
             </div>
           </div>
 
-          {/* Visual hint */}
-          <div className="mt-4 flex items-center gap-2 rounded-lg bg-accent/30 px-3 py-2 text-xs text-accent-foreground">
-            <span className="text-lg">{gesture.emoji}</span>
+          <div className="mt-3 flex items-center gap-2 rounded-lg bg-accent/30 px-3 py-1.5 text-xs text-accent-foreground">
+            <span className="text-base">{gesture.emoji}</span>
             <span>Visual Reference — mimic this hand shape</span>
           </div>
         </motion.div>

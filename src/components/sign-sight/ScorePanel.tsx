@@ -1,5 +1,6 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { Trophy, Zap, Target, Star, Medal, Crown } from 'lucide-react';
+import { Trophy, Zap, Target, Star, Medal, Crown, Flame, Award } from 'lucide-react';
+import { GESTURE_LIBRARY } from '@/lib/gesture-data';
 
 interface ScorePanelProps {
   score: number;
@@ -17,9 +18,14 @@ interface ScorePanelProps {
 const ACHIEVEMENT_DATA: Record<string, { icon: typeof Star; label: string; color: string }> = {
   streak3: { icon: Zap, label: '3x Streak', color: 'text-warning' },
   streak5: { icon: Crown, label: '5x Streak', color: 'text-warning' },
-  allLetters: { icon: Medal, label: 'All Letters', color: 'text-success' },
+  streak10: { icon: Flame, label: '10x Streak', color: 'text-destructive' },
+  letters10: { icon: Medal, label: '10 Letters', color: 'text-success' },
+  allLetters: { icon: Award, label: 'Full Alphabet', color: 'text-primary' },
   score100: { icon: Star, label: 'Century', color: 'text-primary' },
+  score500: { icon: Trophy, label: 'Master', color: 'text-warning' },
 };
+
+const totalLetters = GESTURE_LIBRARY.length;
 
 export function ScorePanel({
   score,
@@ -33,6 +39,8 @@ export function ScorePanel({
   onStartPractice,
   mode,
 }: ScorePanelProps) {
+  const progressPercent = Math.round((completedLetters.size / totalLetters) * 100);
+
   return (
     <div className="space-y-3">
       {/* Stats row */}
@@ -57,9 +65,25 @@ export function ScorePanel({
         <div className="glass-card border border-border/50 p-3 text-center">
           <Target className="mx-auto h-4 w-4 text-success" />
           <p className="mt-1 font-heading text-xl font-bold text-foreground">
-            {completedLetters.size}/6
+            {completedLetters.size}/{totalLetters}
           </p>
           <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Letters</p>
+        </div>
+      </div>
+
+      {/* Progress bar */}
+      <div className="glass-card border border-border/50 p-3">
+        <div className="flex items-center justify-between text-xs text-muted-foreground mb-1.5">
+          <span>Alphabet Progress</span>
+          <span>{progressPercent}%</span>
+        </div>
+        <div className="h-2 rounded-full bg-secondary overflow-hidden">
+          <motion.div
+            className="h-full rounded-full bg-primary"
+            initial={{ width: 0 }}
+            animate={{ width: `${progressPercent}%` }}
+            transition={{ duration: 0.5 }}
+          />
         </div>
       </div>
 
@@ -82,6 +106,7 @@ export function ScorePanel({
               {practiceTimer <= 0 && (
                 <div className="mt-3 space-y-2">
                   <p className="text-sm font-semibold text-success">Round Complete! 🎉</p>
+                  <p className="text-xs text-muted-foreground">Score: {score} | Correct: {practiceCorrect}</p>
                   <button
                     onClick={onStartPractice}
                     className="rounded-lg bg-primary px-4 py-1.5 text-sm font-semibold text-primary-foreground"
@@ -113,7 +138,7 @@ export function ScorePanel({
       {achievements.length > 0 && (
         <div className="glass-card border border-border/50 p-3">
           <p className="mb-2 text-[10px] uppercase tracking-wider text-muted-foreground">
-            Achievements
+            Achievements ({achievements.length})
           </p>
           <div className="flex flex-wrap gap-2">
             <AnimatePresence>

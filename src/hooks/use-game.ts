@@ -61,8 +61,11 @@ export function useGame(landmarks: Landmark[] | null, mode: GameMode) {
     const newAch: string[] = [];
     if (streak >= 3 && !achievements.includes('streak3')) newAch.push('streak3');
     if (streak >= 5 && !achievements.includes('streak5')) newAch.push('streak5');
-    if (completedLetters.size >= 6 && !achievements.includes('allLetters')) newAch.push('allLetters');
+    if (streak >= 10 && !achievements.includes('streak10')) newAch.push('streak10');
+    if (completedLetters.size >= 10 && !achievements.includes('letters10')) newAch.push('letters10');
+    if (completedLetters.size >= 26 && !achievements.includes('allLetters')) newAch.push('allLetters');
     if (score >= 100 && !achievements.includes('score100')) newAch.push('score100');
+    if (score >= 500 && !achievements.includes('score500')) newAch.push('score500');
     if (newAch.length) setAchievements((a) => [...a, ...newAch]);
   }, [streak, completedLetters.size, score, achievements]);
 
