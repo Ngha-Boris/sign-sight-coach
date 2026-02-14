@@ -51,6 +51,8 @@ function scoreChecks(checks: Check[]): GestureResult {
   return { confidence, feedback, status };
 }
 
+// === Individual letter evaluators ===
+
 function evalA(lm: Landmark[]): GestureResult {
   return scoreChecks([
     check(!isExtended(lm, 8, 6), 'Curl your index finger'),
@@ -111,8 +113,212 @@ function evalF(lm: Landmark[]): GestureResult {
   ]);
 }
 
+function evalG(lm: Landmark[]): GestureResult {
+  return scoreChecks([
+    check(isExtended(lm, 8, 6), 'Extend your index finger'),
+    check(!isExtended(lm, 12, 10), 'Curl your middle finger'),
+    check(!isExtended(lm, 16, 14), 'Curl your ring finger'),
+    check(!isExtended(lm, 20, 18), 'Curl your pinky finger'),
+    check(Math.abs(lm[8].y - lm[5].y) < 0.08, 'Point index finger sideways'),
+  ]);
+}
+
+function evalH(lm: Landmark[]): GestureResult {
+  return scoreChecks([
+    check(isExtended(lm, 8, 6), 'Extend your index finger'),
+    check(isExtended(lm, 12, 10), 'Extend your middle finger'),
+    check(!isExtended(lm, 16, 14), 'Curl your ring finger'),
+    check(!isExtended(lm, 20, 18), 'Curl your pinky finger'),
+    check(Math.abs(lm[8].y - lm[5].y) < 0.08, 'Point fingers sideways'),
+  ]);
+}
+
+function evalI(lm: Landmark[]): GestureResult {
+  return scoreChecks([
+    check(!isExtended(lm, 8, 6), 'Curl your index finger'),
+    check(!isExtended(lm, 12, 10), 'Curl your middle finger'),
+    check(!isExtended(lm, 16, 14), 'Curl your ring finger'),
+    check(isExtended(lm, 20, 18), 'Extend your pinky finger up'),
+    check(lm[4].y > lm[3].y, 'Tuck thumb across fingers'),
+  ]);
+}
+
+function evalK(lm: Landmark[]): GestureResult {
+  return scoreChecks([
+    check(isExtended(lm, 8, 6), 'Extend your index finger up'),
+    check(isExtended(lm, 12, 10), 'Extend your middle finger up'),
+    check(!isExtended(lm, 16, 14), 'Curl your ring finger'),
+    check(!isExtended(lm, 20, 18), 'Curl your pinky finger'),
+    check(lm[4].y < lm[6].y, 'Place thumb between index and middle'),
+  ]);
+}
+
+function evalL(lm: Landmark[]): GestureResult {
+  return scoreChecks([
+    check(isExtended(lm, 8, 6), 'Extend your index finger up'),
+    check(!isExtended(lm, 12, 10), 'Curl your middle finger'),
+    check(!isExtended(lm, 16, 14), 'Curl your ring finger'),
+    check(!isExtended(lm, 20, 18), 'Curl your pinky finger'),
+    check(Math.abs(lm[4].x - lm[3].x) > 0.03, 'Extend thumb out to form an L'),
+  ]);
+}
+
+function evalM(lm: Landmark[]): GestureResult {
+  return scoreChecks([
+    check(!isExtended(lm, 8, 6), 'Curl your index finger over thumb'),
+    check(!isExtended(lm, 12, 10), 'Curl your middle finger over thumb'),
+    check(!isExtended(lm, 16, 14), 'Curl your ring finger over thumb'),
+    check(!isExtended(lm, 20, 18), 'Curl your pinky finger'),
+    check(lm[4].y > lm[6].y, 'Tuck thumb under three fingers'),
+  ]);
+}
+
+function evalN(lm: Landmark[]): GestureResult {
+  return scoreChecks([
+    check(!isExtended(lm, 8, 6), 'Curl your index finger over thumb'),
+    check(!isExtended(lm, 12, 10), 'Curl your middle finger over thumb'),
+    check(!isExtended(lm, 16, 14), 'Curl your ring finger'),
+    check(!isExtended(lm, 20, 18), 'Curl your pinky finger'),
+    check(lm[4].y > lm[6].y, 'Tuck thumb under two fingers'),
+  ]);
+}
+
+function evalO(lm: Landmark[]): GestureResult {
+  return scoreChecks([
+    check(areTouching(lm, 4, 8, 0.09), 'Touch index finger to thumb'),
+    check(areTouching(lm, 4, 12, 0.12), 'Bring middle finger toward thumb'),
+    check(!isExtended(lm, 16, 14), 'Curl your ring finger'),
+    check(!isExtended(lm, 20, 18), 'Curl your pinky finger'),
+  ]);
+}
+
+function evalP(lm: Landmark[]): GestureResult {
+  return scoreChecks([
+    check(isExtended(lm, 8, 6), 'Extend index finger forward'),
+    check(isExtended(lm, 12, 10), 'Extend middle finger down'),
+    check(!isExtended(lm, 16, 14), 'Curl your ring finger'),
+    check(!isExtended(lm, 20, 18), 'Curl your pinky finger'),
+    check(lm[8].y > lm[5].y, 'Point hand downward'),
+  ]);
+}
+
+function evalQ(lm: Landmark[]): GestureResult {
+  return scoreChecks([
+    check(isExtended(lm, 8, 6) || lm[8].y > lm[5].y, 'Point index finger downward'),
+    check(!isExtended(lm, 12, 10), 'Curl your middle finger'),
+    check(!isExtended(lm, 16, 14), 'Curl your ring finger'),
+    check(!isExtended(lm, 20, 18), 'Curl your pinky finger'),
+    check(lm[8].y > lm[5].y, 'Point hand downward'),
+  ]);
+}
+
+function evalR(lm: Landmark[]): GestureResult {
+  return scoreChecks([
+    check(isExtended(lm, 8, 6), 'Extend your index finger up'),
+    check(isExtended(lm, 12, 10), 'Extend your middle finger up'),
+    check(!isExtended(lm, 16, 14), 'Curl your ring finger'),
+    check(!isExtended(lm, 20, 18), 'Curl your pinky finger'),
+    check(dist(lm[8], lm[12]) < 0.04, 'Cross middle finger over index'),
+  ]);
+}
+
+function evalS(lm: Landmark[]): GestureResult {
+  return scoreChecks([
+    check(!isExtended(lm, 8, 6), 'Curl your index finger'),
+    check(!isExtended(lm, 12, 10), 'Curl your middle finger'),
+    check(!isExtended(lm, 16, 14), 'Curl your ring finger'),
+    check(!isExtended(lm, 20, 18), 'Curl your pinky finger'),
+    check(lm[4].y < lm[6].y, 'Place thumb over front of fingers'),
+  ]);
+}
+
+function evalT(lm: Landmark[]): GestureResult {
+  return scoreChecks([
+    check(!isExtended(lm, 8, 6), 'Curl your index finger'),
+    check(!isExtended(lm, 12, 10), 'Curl your middle finger'),
+    check(!isExtended(lm, 16, 14), 'Curl your ring finger'),
+    check(!isExtended(lm, 20, 18), 'Curl your pinky finger'),
+    check(areTouching(lm, 4, 6, 0.06), 'Tuck thumb between index and middle'),
+  ]);
+}
+
+function evalU(lm: Landmark[]): GestureResult {
+  return scoreChecks([
+    check(isExtended(lm, 8, 6), 'Extend your index finger up'),
+    check(isExtended(lm, 12, 10), 'Extend your middle finger up'),
+    check(dist(lm[8], lm[12]) < 0.04, 'Keep index and middle together'),
+    check(!isExtended(lm, 16, 14), 'Curl your ring finger'),
+    check(!isExtended(lm, 20, 18), 'Curl your pinky finger'),
+  ]);
+}
+
+function evalV(lm: Landmark[]): GestureResult {
+  return scoreChecks([
+    check(isExtended(lm, 8, 6), 'Extend your index finger up'),
+    check(isExtended(lm, 12, 10), 'Extend your middle finger up'),
+    check(dist(lm[8], lm[12]) > 0.04, 'Spread index and middle apart (V shape)'),
+    check(!isExtended(lm, 16, 14), 'Curl your ring finger'),
+    check(!isExtended(lm, 20, 18), 'Curl your pinky finger'),
+  ]);
+}
+
+function evalW(lm: Landmark[]): GestureResult {
+  return scoreChecks([
+    check(isExtended(lm, 8, 6), 'Extend your index finger up'),
+    check(isExtended(lm, 12, 10), 'Extend your middle finger up'),
+    check(isExtended(lm, 16, 14), 'Extend your ring finger up'),
+    check(!isExtended(lm, 20, 18), 'Curl your pinky finger'),
+    check(lm[4].y > lm[3].y, 'Tuck thumb down'),
+  ]);
+}
+
+function evalX(lm: Landmark[]): GestureResult {
+  return scoreChecks([
+    check(!isExtended(lm, 8, 6) && lm[8].y > lm[7].y, 'Hook your index finger'),
+    check(!isExtended(lm, 12, 10), 'Curl your middle finger'),
+    check(!isExtended(lm, 16, 14), 'Curl your ring finger'),
+    check(!isExtended(lm, 20, 18), 'Curl your pinky finger'),
+  ]);
+}
+
+function evalY(lm: Landmark[]): GestureResult {
+  return scoreChecks([
+    check(!isExtended(lm, 8, 6), 'Curl your index finger'),
+    check(!isExtended(lm, 12, 10), 'Curl your middle finger'),
+    check(!isExtended(lm, 16, 14), 'Curl your ring finger'),
+    check(isExtended(lm, 20, 18), 'Extend your pinky finger'),
+    check(Math.abs(lm[4].x - lm[3].x) > 0.03, 'Extend thumb out to the side'),
+  ]);
+}
+
+// J and Z involve motion — use static starting pose
+function evalJ(lm: Landmark[]): GestureResult {
+  // J starts like I (pinky extended), then traces J motion
+  return scoreChecks([
+    check(!isExtended(lm, 8, 6), 'Curl your index finger'),
+    check(!isExtended(lm, 12, 10), 'Curl your middle finger'),
+    check(!isExtended(lm, 16, 14), 'Curl your ring finger'),
+    check(isExtended(lm, 20, 18), 'Extend your pinky finger'),
+    check(lm[4].y > lm[3].y, 'Tuck thumb — then trace a J downward'),
+  ]);
+}
+
+function evalZ(lm: Landmark[]): GestureResult {
+  // Z starts with index pointing out
+  return scoreChecks([
+    check(isExtended(lm, 8, 6), 'Point your index finger out'),
+    check(!isExtended(lm, 12, 10), 'Curl your middle finger'),
+    check(!isExtended(lm, 16, 14), 'Curl your ring finger'),
+    check(!isExtended(lm, 20, 18), 'Curl your pinky finger'),
+  ]);
+}
+
 const evaluators: Record<string, (lm: Landmark[]) => GestureResult> = {
   A: evalA, B: evalB, C: evalC, D: evalD, E: evalE, F: evalF,
+  G: evalG, H: evalH, I: evalI, J: evalJ, K: evalK, L: evalL,
+  M: evalM, N: evalN, O: evalO, P: evalP, Q: evalQ, R: evalR,
+  S: evalS, T: evalT, U: evalU, V: evalV, W: evalW, X: evalX,
+  Y: evalY, Z: evalZ,
 };
 
 export function evaluateGesture(landmarks: Landmark[] | null, targetLetter: string): GestureResult {
