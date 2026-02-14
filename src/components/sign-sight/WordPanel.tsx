@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { BookOpen, Keyboard } from 'lucide-react';
+import { BookOpen, Keyboard, Mic, MicOff, Loader2 } from 'lucide-react';
 import { WORD_LIBRARY } from '@/lib/word-data';
 
 interface WordPanelProps {
@@ -25,42 +25,131 @@ export function WordPanel({
   onStartWord,
 }: WordPanelProps) {
   const [customWord, setCustomWord] = useState('');
+  const [isListening, setIsListening] = useState(false);
+  const [voiceTranscript, setVoiceTranscript] = useState('');
+  const recognitionRef = useRef<any>(null);
 
-  const handleCustomStart = () => {
-    const cleaned = customWord.toUpperCase().replace(/[^A-Z]/g, '');
+  const handleCustomStart = (word?: string) => {
+    const input = word || customWord;
+    const cleaned = input.toUpperCase().replace(/[^A-Z]/g, '');
     if (cleaned.length > 0) {
       onStartWord(cleaned);
       setCustomWord('');
+      setVoiceTranscript('');
     }
   };
+
+  const startVoiceInput = useCallback(() => {
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      alert('Speech recognition is not supported in this browser. Try Chrome or Edge.');
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.continuous = false;
+    recognition.interimResults = true;
+    recognition.lang = 'en-US';
+
+    recognition.onstart = () => {
+      setIsListening(true);
+      setVoiceTranscript('');
+    };
+
+    recognition.onresult = (event: any) => {
+      let transcript = '';
+      for (let i = 0; i < event.results.length; i++) {
+        transcript += event.results[i][0].transcript;
+      }
+      setVoiceTranscript(transcript);
+
+      // If final result, use it
+      if (event.results[0].isFinal) {
+        const cleaned = transcript.toUpperCase().replace(/[^A-Z ]/g, '').replace(/\s+/g, '');
+        if (cleaned.length > 0) {
+          setTimeout(() => {
+            handleCustomStart(cleaned);
+            setIsListening(false);
+          }, 500);
+        }
+      }
+    };
+
+    recognition.onerror = (e: any) => {
+      console.error('Speech recognition error:', e.error);
+      setIsListening(false);
+    };
+
+    recognition.onend = () => {
+      setIsListening(false);
+    };
+
+    recognitionRef.current = recognition;
+    recognition.start();
+  }, []);
+
+  const stopVoiceInput = useCallback(() => {
+    if (recognitionRef.current) {
+      recognitionRef.current.stop();
+    }
+    setIsListening(false);
+
+    // If we have a transcript, use it
+    if (voiceTranscript) {
+      handleCustomStart(voiceTranscript);
+    }
+  }, [voiceTranscript]);
 
   if (!wordActive) {
     return (
       <div className="space-y-3">
-        {/* Custom word input */}
+        {/* Input section */}
         <div className="glass-card border border-border/50 p-4">
           <p className="text-xs uppercase tracking-wider text-muted-foreground mb-2">
-            Type a word or sentence to practice
+            Type or say a word to practice
           </p>
           <div className="flex gap-2">
             <input
               type="text"
               value={customWord}
               onChange={(e) => setCustomWord(e.target.value)}
-              placeholder="e.g. HELLO"
+              placeholder={isListening ? (voiceTranscript || 'Listening...') : 'e.g. HELLO'}
               className="flex-1 rounded-lg bg-secondary border border-border/50 px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
               onKeyDown={(e) => e.key === 'Enter' && handleCustomStart()}
+              disabled={isListening}
             />
             <motion.button
               whileHover={{ scale: 1.03 }}
               whileTap={{ scale: 0.97 }}
-              onClick={handleCustomStart}
-              disabled={!customWord.trim()}
-              className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground disabled:opacity-40"
+              onClick={() => handleCustomStart()}
+              disabled={!customWord.trim() || isListening}
+              className="rounded-lg bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground disabled:opacity-40"
             >
               <Keyboard className="h-4 w-4" />
             </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
+              onClick={isListening ? stopVoiceInput : startVoiceInput}
+              className={`rounded-lg px-3 py-2 text-sm font-semibold transition-colors ${
+                isListening
+                  ? 'bg-destructive text-destructive-foreground animate-pulse'
+                  : 'bg-accent border border-primary/20 text-accent-foreground hover:bg-accent/80'
+              }`}
+            >
+              {isListening ? (
+                <MicOff className="h-4 w-4" />
+              ) : (
+                <Mic className="h-4 w-4" />
+              )}
+            </motion.button>
           </div>
+          {isListening && (
+            <div className="mt-2 flex items-center gap-2 text-xs text-primary">
+              <Loader2 className="h-3 w-3 animate-spin" />
+              <span>{voiceTranscript ? `Heard: "${voiceTranscript}"` : 'Listening... say a word'}</span>
+            </div>
+          )}
         </div>
 
         {/* Quick-start words */}
