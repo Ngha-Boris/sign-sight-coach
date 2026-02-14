@@ -91,7 +91,7 @@ const Index = () => {
               <div className="flex-1">
                 <FeedbackBar feedback={game.feedback} status={game.status} />
               </div>
-              <VoiceCoach feedback={game.feedback} currentLetter={game.currentLetter} />
+              <VoiceCoach feedback={game.feedback} currentLetter={game.currentLetter} status={game.status} isTracking={isTracking} />
             </div>
           </div>
         </div>
