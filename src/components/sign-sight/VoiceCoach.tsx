@@ -133,11 +133,15 @@ export function VoiceCoach({ feedback, currentLetter, status, isTracking }: Voic
     const prev = prevStatusRef.current;
     prevStatusRef.current = status;
 
-    clearTimeout(debounceRef.current);
-
     const feedbackKey = feedback.join('|');
     const feedbackChanged = feedbackKey !== lastFeedbackKeyRef.current;
     lastFeedbackKeyRef.current = feedbackKey;
+
+    // Only clear pending speech on actual status transitions
+    const statusChanged = status !== prev;
+    if (statusChanged) {
+      clearTimeout(debounceRef.current);
+    }
 
     // ---- NO HAND ----
     if (status === 'no-hand' && prev !== 'no-hand') {
@@ -158,6 +162,7 @@ export function VoiceCoach({ feedback, currentLetter, status, isTracking }: Voic
     // ---- CLOSE ----
     if (status === 'close') {
       if (prev !== 'close' || feedbackChanged) {
+        clearTimeout(debounceRef.current);
         debounceRef.current = setTimeout(() => {
           const tips = feedback.filter(f => !f.includes('Almost') && !f.includes('Perfect'));
           if (tips.length > 0) {
@@ -181,13 +186,14 @@ export function VoiceCoach({ feedback, currentLetter, status, isTracking }: Voic
         lastEncourageRef.current = now;
         debounceRef.current = setTimeout(() => {
           if (tips.length > 0) {
-            speak(`Not quite right. ${tips[0]}. ${tips.length > 1 ? `Also, ${tips[1].toLowerCase()}.` : ''}`);
+            speak(`That sign is not correct. ${tips[0]}. ${tips.length > 1 ? `Also, ${tips[1].toLowerCase()}.` : ''}`);
           } else {
-            speak('That doesn\'t look right. Check the reference image and try again.');
+            speak('That sign is not correct. Check the reference image and try again.');
           }
         }, 1200);
       } else if (feedbackChanged) {
         // Feedback changed while still incorrect — user is adjusting, give updated tips
+        clearTimeout(debounceRef.current);
         debounceRef.current = setTimeout(() => {
           if (tips.length > 0) {
             speak(`Try to ${tips[0].toLowerCase()}.`);
