@@ -1,12 +1,69 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { useState } from 'react';
+import { Header } from '@/components/sign-sight/Header';
+import { GestureDisplay } from '@/components/sign-sight/GestureDisplay';
+import { WebcamFeed } from '@/components/sign-sight/WebcamFeed';
+import { FeedbackBar } from '@/components/sign-sight/FeedbackBar';
+import { ScorePanel } from '@/components/sign-sight/ScorePanel';
+import { useHandTracking } from '@/hooks/use-hand-tracking';
+import { useGame, type GameMode } from '@/hooks/use-game';
 
 const Index = () => {
+  const [mode, setMode] = useState<GameMode>('learn');
+  const { videoRef, canvasRef, isTracking, isLoading, landmarks, error, startTracking, stopTracking } =
+    useHandTracking();
+  const game = useGame(landmarks, mode);
+
+  const handleModeChange = (newMode: GameMode) => {
+    setMode(newMode);
+    game.resetGame();
+  };
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="mb-4 text-4xl font-bold">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
-      </div>
+    <div className="flex min-h-screen flex-col bg-background">
+      <Header mode={mode} onModeChange={handleModeChange} score={game.score} streak={game.streak} />
+
+      <main className="flex-1 container mx-auto px-4 py-6">
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+          {/* Left panel — Reference & Score */}
+          <div className="lg:col-span-2 space-y-4">
+            <GestureDisplay
+              currentLetter={game.currentLetter}
+              onSelectLetter={game.setCurrentLetter}
+              completedLetters={game.completedLetters}
+              mode={mode}
+              status={game.status}
+            />
+            <ScorePanel
+              score={game.score}
+              streak={game.streak}
+              maxStreak={game.maxStreak}
+              completedLetters={game.completedLetters}
+              achievements={game.achievements}
+              practiceActive={game.practiceActive}
+              practiceTimer={game.practiceTimer}
+              practiceCorrect={game.practiceCorrect}
+              onStartPractice={game.startPractice}
+              mode={mode}
+            />
+          </div>
+
+          {/* Right panel — Camera & Feedback */}
+          <div className="lg:col-span-3 space-y-4">
+            <WebcamFeed
+              videoRef={videoRef}
+              canvasRef={canvasRef}
+              isTracking={isTracking}
+              isLoading={isLoading}
+              confidence={game.confidence}
+              status={game.status}
+              error={error}
+              onStart={startTracking}
+              onStop={stopTracking}
+            />
+            <FeedbackBar feedback={game.feedback} status={game.status} />
+          </div>
+        </div>
+      </main>
     </div>
   );
 };
