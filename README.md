@@ -1,73 +1,277 @@
-# Welcome to your Lovable project
+# ✋ Sign-Sight — AI Sign Language Coach
 
-## Project info
+> Learn sign language with real-time AI feedback through your webcam.
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+Sign-Sight is an interactive educational web app that teaches sign language gestures using real-time computer vision. Users practice hand signs and receive instant corrective feedback, transforming sign learning into a gamified, accessible experience.
 
-## How can I edit this code?
+Built for social impact and inclusive communication.
 
-There are several ways of editing your application.
+---
 
-**Use Lovable**
+## 🌍 Overview
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+Learning sign language without a teacher is difficult because beginners lack immediate feedback. Sign-Sight solves this by turning your webcam into an AI gesture coach.
 
-Changes made via Lovable will be committed automatically to this repo.
+The system tracks hand landmarks in real time, evaluates gesture accuracy, and provides actionable feedback like:
 
-**Use your preferred IDE**
+- ✅ “Perfect!”
+- ⚠ “Tilt your thumb inward”
+- 🔄 “Straighten your fingers”
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+This enables self-guided, confidence-building practice — anytime, anywhere.
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+---
 
-Follow these steps:
+## ✨ Core Features
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+### 🎯 Live Learning Mode
+- Guided gesture demonstrations
+- Real-time hand tracking
+- Instant corrective feedback
+- Confidence scoring meter
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+---
 
-# Step 3: Install the necessary dependencies.
-npm i
+### 🎮 Practice Mode
+- Random sign challenges
+- Timed practice rounds
+- Accuracy scoring
+- Session summary
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+---
+
+### 🧠 Gesture Evaluation Engine
+- Hand landmark detection
+- Gesture similarity scoring
+- Threshold-based accuracy checks
+- Instructional feedback generation
+
+---
+
+### 🔊 Voice Interaction
+- Text-to-speech coaching feedback
+- Optional speech recognition controls
+
+---
+
+### 🏆 Gamification
+- Score tracking
+- Combo streaks
+- Performance summaries
+
+---
+
+### ♿ Accessibility Enhancements
+- Visual gesture hints
+- Slow demonstration mode
+- High-contrast UI options
+
+---
+
+## 🧠 How It Works
+
+1. Webcam captures live hand movement.
+2. Hand landmarks are detected in real time.
+3. Landmarks are compared against gesture templates.
+4. A similarity score determines accuracy.
+5. Feedback is displayed instantly.
+
+Gesture similarity model:
+
+$$
+Similarity = 1 - \frac{\sum |L_{user} - L_{template}|}{n}
+$$
+
+Where:
+
+- \(L_{user}\) → detected landmarks  
+- \(L_{template}\) → reference gesture  
+- \(n\) → total comparisons  
+
+This approach enables fast, browser-native gesture evaluation.
+
+---
+
+## 🏗 Architecture Overview
+
+```
+User Webcam
+     ↓
+Hand Landmark Detection
+     ↓
+Gesture Comparison Engine
+     ↓
+Feedback + Scoring System
+     ↓
+UI Rendering + Voice Feedback
+```
+
+Key design principles:
+
+- Client-side gesture processing for low latency
+- Modular architecture for scalability
+- Responsive UI rendering pipeline
+
+---
+
+## 🛠 Tech Stack
+
+### Frontend
+- TypeScript
+- React + Vite
+- Tailwind CSS
+- shadcn/ui
+- Framer Motion
+- React Router
+- TanStack React Query
+
+### Computer Vision
+- Browser-based hand landmark tracking
+- GPU/WebAssembly acceleration
+
+### AI Interaction
+- Text-to-speech integration
+- Speech recognition (browser-native)
+
+### Backend & Cloud
+- Edge Functions runtime
+- PostgreSQL database
+- Cloud deployment infrastructure
+
+---
+
+## 🚀 Installation
+
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/your-username/sign-sight.git
+cd sign-sight
+```
+
+---
+
+### 2. Install dependencies
+
+```bash
+npm install
+```
+
+---
+
+### 3. Run development server
+
+```bash
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+Open:
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+```
+http://localhost:5173
+```
 
-**Use GitHub Codespaces**
+---
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+## 🔐 Environment Variables
 
-## What technologies are used for this project?
+Create a `.env` file if required:
 
-This project is built with:
+```env
+TTS_API_KEY=your_key_here
+```
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+---
 
-## How can I deploy this project?
+## ▶ Demo
 
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
+Live demo:
 
-## Can I connect a custom domain to my Lovable project?
+👉 https://your-demo-link.com
 
-Yes, you can!
+Video walkthrough:
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+👉 https://your-video-link.com
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+---
+
+## 📦 Project Structure
+
+```
+src/
+ ├── components/
+ ├── vision/
+ ├── feedback/
+ ├── hooks/
+ ├── pages/
+ └── utils/
+```
+
+- `vision/` → gesture tracking logic  
+- `feedback/` → evaluation engine  
+- `components/` → UI modules  
+
+---
+
+## 🧪 Performance Goals
+
+- Smooth real-time tracking (~30 FPS)
+- Low-latency feedback
+- Browser-optimized rendering
+
+---
+
+## 🌱 Future Roadmap
+
+- Full sign alphabet training
+- Word and phrase recognition
+- Personalized learning profiles
+- AI classifier training
+- Multiplayer practice modes
+- Mobile optimization
+
+---
+
+## 🎯 Impact
+
+Sign-Sight promotes:
+
+- Inclusive communication
+- Accessibility learning
+- Confidence-building education
+
+The goal is to make sign language learning approachable, interactive, and widely accessible.
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome!
+
+1. Fork the project
+2. Create a feature branch
+3. Submit a pull request
+
+---
+
+## 📄 License
+
+MIT License — free to use and modify.
+
+---
+
+## 💡 Acknowledgments
+
+Inspired by inclusive education, accessibility advocacy, and the power of real-time AI learning tools.
+
+---
+
+## ⭐ Support
+
+If you like this project:
+
+👉 Star the repo  
+👉 Share it  
+👉 Contribute  
+
+Together we make communication more inclusive.
