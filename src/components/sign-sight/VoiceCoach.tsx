@@ -9,6 +9,32 @@ interface VoiceCoachProps {
   isTracking: boolean;
 }
 
+// Varied phrases to keep the AI feeling alive
+const CORRECT_PHRASES = [
+  'Perfect! Great job!',
+  'Excellent! You nailed it!',
+  'That\'s right! Well done!',
+  'Amazing! Keep it up!',
+  'Wonderful! You\'re getting better!',
+  'Spot on! Nice work!',
+];
+
+const NO_HAND_PHRASES = [
+  'I can\'t see your hand. Please show it to the camera.',
+  'Where did your hand go? Hold it up so I can see it.',
+  'Please position your hand in front of the camera.',
+];
+
+const ENCOURAGE_PHRASES = [
+  'You\'re doing great, keep trying!',
+  'Don\'t give up, you\'re almost there!',
+  'Keep at it, practice makes perfect!',
+];
+
+function pickRandom(arr: string[]) {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
 export function VoiceCoach({ feedback, currentLetter, status, isTracking }: VoiceCoachProps) {
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [muted, setMuted] = useState(false);
@@ -19,18 +45,21 @@ export function VoiceCoach({ feedback, currentLetter, status, isTracking }: Voic
   const prevStatusRef = useRef<GestureStatus>('no-hand');
   const prevLetterRef = useRef(currentLetter);
   const hasGreetedRef = useRef(false);
+  const incorrectCountRef = useRef(0);
+  const lastFeedbackKeyRef = useRef('');
+  const speakingRef = useRef(false);
 
-  const speak = useCallback(async (text: string, force = false) => {
+  const speak = useCallback(async (text: string) => {
     if (muted || !text) return;
-    if (!force && text === lastSpokenRef.current) return;
-    
-    // If already speaking, queue it
-    if (isSpeaking) {
+
+    // If already speaking, queue the latest
+    if (speakingRef.current) {
       speakQueueRef.current = text;
       return;
     }
 
     lastSpokenRef.current = text;
+    speakingRef.current = true;
     setIsSpeaking(true);
 
     try {
@@ -57,99 +86,144 @@ export function VoiceCoach({ feedback, currentLetter, status, isTracking }: Voic
 
       if (audioRef.current) {
         audioRef.current.pause();
+        audioRef.current = null;
       }
 
       const audio = new Audio(url);
       audioRef.current = audio;
       audio.onended = () => {
+        speakingRef.current = false;
         setIsSpeaking(false);
-        // Play queued message
+        URL.revokeObjectURL(url);
+        // Play queued message after a short pause
         if (speakQueueRef.current) {
           const queued = speakQueueRef.current;
           speakQueueRef.current = null;
-          setTimeout(() => speak(queued, true), 300);
+          setTimeout(() => speak(queued), 400);
         }
+      };
+      audio.onerror = () => {
+        speakingRef.current = false;
+        setIsSpeaking(false);
       };
       await audio.play();
     } catch (e) {
       console.error('Voice coach error:', e);
+      speakingRef.current = false;
       setIsSpeaking(false);
     }
-  }, [muted, isSpeaking]);
+  }, [muted]);
 
-  // Auto-speak when camera starts
+  // Greet when camera starts
   useEffect(() => {
     if (isTracking && !hasGreetedRef.current && !muted) {
       hasGreetedRef.current = true;
-      speak(`Welcome! Show your hand to the camera. Let's practice the letter ${currentLetter}.`, true);
+      incorrectCountRef.current = 0;
+      speak(`Welcome to Sign Sight! Show your hand to the camera and let's practice the letter ${currentLetter}. I'll guide you through it.`);
     }
     if (!isTracking) {
       hasGreetedRef.current = false;
     }
   }, [isTracking, muted, currentLetter, speak]);
 
-  // Auto-speak on status changes (debounced)
+  // Reactive coaching on every status/feedback change
   useEffect(() => {
     if (!isTracking || muted) return;
 
     const prev = prevStatusRef.current;
     prevStatusRef.current = status;
 
-    // Clear any pending debounce
     clearTimeout(debounceRef.current);
 
-    // No-hand detected
+    // Build a key from the current feedback to detect real changes
+    const feedbackKey = feedback.join('|');
+    const feedbackChanged = feedbackKey !== lastFeedbackKeyRef.current;
+    lastFeedbackKeyRef.current = feedbackKey;
+
+    // ---- NO HAND ----
     if (status === 'no-hand' && prev !== 'no-hand') {
+      incorrectCountRef.current = 0;
       debounceRef.current = setTimeout(() => {
-        speak('I can\'t see your hand. Please show your hand to the camera.', true);
-      }, 2500);
-      return;
-    }
-
-    // Correct!
-    if (status === 'correct' && prev !== 'correct') {
-      speak('Perfect! Great job!', true);
-      return;
-    }
-
-    // Close — give tips after a moment
-    if (status === 'close' && prev !== 'close') {
-      debounceRef.current = setTimeout(() => {
-        const tips = feedback.filter(f => !f.includes('Almost') && !f.includes('Perfect'));
-        if (tips.length > 0) {
-          speak(`Almost there! Try to ${tips[0].toLowerCase()}`, true);
-        }
+        speak(pickRandom(NO_HAND_PHRASES));
       }, 2000);
       return;
     }
 
-    // Incorrect — give corrective feedback after a delay
-    if (status === 'incorrect' && prev === 'incorrect') {
-      // Only speak if feedback changed substantially
-      debounceRef.current = setTimeout(() => {
-        const tips = feedback.filter(f => !f.includes('Almost') && !f.includes('Perfect'));
-        if (tips.length > 0) {
-          const tip = tips[Math.floor(Math.random() * Math.min(tips.length, 2))];
-          speak(tip, true);
-        }
-      }, 4000);
+    // ---- CORRECT ----
+    if (status === 'correct' && prev !== 'correct') {
+      incorrectCountRef.current = 0;
+      speak(pickRandom(CORRECT_PHRASES));
+      return;
+    }
+
+    // ---- CLOSE ----
+    if (status === 'close') {
+      if (prev !== 'close' || feedbackChanged) {
+        debounceRef.current = setTimeout(() => {
+          const tips = feedback.filter(f => !f.includes('Almost') && !f.includes('Perfect'));
+          if (tips.length > 0) {
+            speak(`Almost there! ${tips[0]}. Just a small adjustment.`);
+          } else {
+            speak('You\'re very close! Keep adjusting your hand.');
+          }
+        }, 1800);
+      }
+      return;
+    }
+
+    // ---- INCORRECT ----
+    if (status === 'incorrect') {
+      incorrectCountRef.current++;
+      const tips = feedback.filter(f => !f.includes('Almost') && !f.includes('Perfect'));
+
+      if (prev !== 'incorrect') {
+        // Just transitioned to incorrect — give immediate specific feedback
+        debounceRef.current = setTimeout(() => {
+          if (tips.length > 0) {
+            speak(`Not quite right. ${tips[0]}. ${tips.length > 1 ? `Also, ${tips[1].toLowerCase()}.` : ''}`);
+          }
+        }, 1500);
+      } else if (feedbackChanged) {
+        // Feedback changed while still incorrect — user is adjusting, give updated tips
+        debounceRef.current = setTimeout(() => {
+          if (tips.length > 0) {
+            speak(`Try to ${tips[0].toLowerCase()}.`);
+          }
+        }, 3000);
+      } else if (incorrectCountRef.current > 0 && incorrectCountRef.current % 8 === 0) {
+        // User stuck for a while — give encouragement
+        debounceRef.current = setTimeout(() => {
+          if (tips.length > 0) {
+            speak(`${pickRandom(ENCOURAGE_PHRASES)} Focus on this: ${tips[0].toLowerCase()}.`);
+          }
+        }, 3000);
+      }
+      return;
     }
   }, [status, feedback, isTracking, muted, speak]);
 
-  // Auto-speak when letter changes
+  // Auto-announce letter changes
   useEffect(() => {
     if (!isTracking || muted) return;
     if (currentLetter !== prevLetterRef.current) {
       prevLetterRef.current = currentLetter;
+      incorrectCountRef.current = 0;
+      clearTimeout(debounceRef.current);
       debounceRef.current = setTimeout(() => {
-        speak(`Now show me the letter ${currentLetter}.`, true);
-      }, 800);
+        speak(`Next up: the letter ${currentLetter}. Show me the sign!`);
+      }, 600);
     }
   }, [currentLetter, isTracking, muted, speak]);
 
-  // Cleanup debounce
+  // Cleanup
   useEffect(() => {
-    return () => clearTimeout(debounceRef.current);
+    return () => {
+      clearTimeout(debounceRef.current);
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
+    };
   }, []);
 
   return (
@@ -159,7 +233,7 @@ export function VoiceCoach({ feedback, currentLetter, status, isTracking }: Voic
           const text = feedback.length > 0
             ? feedback.slice(0, 3).join('. ')
             : `Show the sign for letter ${currentLetter}`;
-          speak(text, true);
+          speak(text);
         }}
         disabled={isSpeaking}
         className="flex items-center gap-1.5 rounded-lg bg-primary/10 border border-primary/20 px-3 py-1.5 text-xs font-semibold text-primary hover:bg-primary/20 transition-colors disabled:opacity-50"
@@ -172,7 +246,15 @@ export function VoiceCoach({ feedback, currentLetter, status, isTracking }: Voic
         {isSpeaking ? 'Speaking...' : 'Voice Coach'}
       </button>
       <button
-        onClick={() => setMuted(!muted)}
+        onClick={() => {
+          setMuted(!muted);
+          if (audioRef.current && !muted) {
+            audioRef.current.pause();
+            audioRef.current = null;
+            speakingRef.current = false;
+            setIsSpeaking(false);
+          }
+        }}
         className={`flex h-7 w-7 items-center justify-center rounded-md transition-colors ${
           muted ? 'bg-destructive/15 text-destructive' : 'bg-secondary text-muted-foreground hover:text-foreground'
         }`}
