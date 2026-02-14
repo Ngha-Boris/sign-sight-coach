@@ -13,7 +13,6 @@ export function Header({ mode, onModeChange, score, streak }: HeaderProps) {
   return (
     <header className="glass-card border-b border-border/50 px-4 py-3 sticky top-0 z-50">
       <div className="container mx-auto flex items-center justify-between">
-        {/* Logo */}
         <div className="flex items-center gap-2.5">
           <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/15 glow-primary">
             <Hand className="h-5 w-5 text-primary" />
@@ -28,13 +27,12 @@ export function Header({ mode, onModeChange, score, streak }: HeaderProps) {
           </div>
         </div>
 
-        {/* Mode Tabs */}
         <div className="flex rounded-lg bg-secondary/60 p-0.5">
-          {(['learn', 'practice'] as const).map((m) => (
+          {(['learn', 'practice', 'words'] as const).map((m) => (
             <button
               key={m}
               onClick={() => onModeChange(m)}
-              className={`relative rounded-md px-4 py-1.5 text-sm font-semibold capitalize transition-colors ${
+              className={`relative rounded-md px-3 py-1.5 text-sm font-semibold capitalize transition-colors ${
                 mode === m ? 'text-primary-foreground' : 'text-muted-foreground hover:text-foreground'
               }`}
             >
@@ -50,7 +48,6 @@ export function Header({ mode, onModeChange, score, streak }: HeaderProps) {
           ))}
         </div>
 
-        {/* Score */}
         <div className="flex items-center gap-4">
           {streak > 0 && (
             <motion.div
