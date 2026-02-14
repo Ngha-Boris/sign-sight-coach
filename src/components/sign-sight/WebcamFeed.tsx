@@ -37,22 +37,28 @@ export function WebcamFeed({
 
   return (
     <div className="space-y-4">
-      {/* Camera viewport */}
       <div
         className={`glass-card border ${borderColor} relative aspect-[4/3] overflow-hidden transition-colors duration-300`}
       >
-        {isTracking ? (
+        {/* Always render video & canvas so refs are stable */}
+        <video
+          ref={videoRef}
+          className={`absolute inset-0 h-full w-full object-cover -scale-x-100 ${
+            isTracking ? 'block' : 'hidden'
+          }`}
+          autoPlay
+          playsInline
+          muted
+        />
+        <canvas
+          ref={canvasRef}
+          className={`absolute inset-0 h-full w-full -scale-x-100 ${
+            isTracking ? 'block' : 'hidden'
+          }`}
+        />
+
+        {isTracking && (
           <>
-            <video
-              ref={videoRef}
-              className="absolute inset-0 h-full w-full object-cover -scale-x-100"
-              playsInline
-              muted
-            />
-            <canvas
-              ref={canvasRef}
-              className="absolute inset-0 h-full w-full -scale-x-100"
-            />
             {/* Confidence overlay */}
             <div className="absolute bottom-3 right-3">
               <ConfidenceMeter confidence={confidence} status={status} />
@@ -65,7 +71,9 @@ export function WebcamFeed({
               <CameraOff className="h-4 w-4" />
             </button>
           </>
-        ) : (
+        )}
+
+        {!isTracking && (
           <div className="flex h-full flex-col items-center justify-center gap-4 p-8">
             <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 border border-primary/20">
               {isLoading ? (

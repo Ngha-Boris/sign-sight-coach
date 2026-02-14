@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { Trophy, Zap, Target, Star, Medal, Crown, Flame, Award } from 'lucide-react';
+import { Trophy, Zap, Target, Star, Medal, Crown, Flame, Award, BookOpen, GraduationCap } from 'lucide-react';
 import { GESTURE_LIBRARY } from '@/lib/gesture-data';
 
 interface ScorePanelProps {
@@ -12,7 +12,7 @@ interface ScorePanelProps {
   practiceTimer: number;
   practiceCorrect: number;
   onStartPractice: () => void;
-  mode: 'learn' | 'practice';
+  mode: 'learn' | 'practice' | 'words';
 }
 
 const ACHIEVEMENT_DATA: Record<string, { icon: typeof Star; label: string; color: string }> = {
@@ -23,6 +23,8 @@ const ACHIEVEMENT_DATA: Record<string, { icon: typeof Star; label: string; color
   allLetters: { icon: Award, label: 'Full Alphabet', color: 'text-primary' },
   score100: { icon: Star, label: 'Century', color: 'text-primary' },
   score500: { icon: Trophy, label: 'Master', color: 'text-warning' },
+  firstWord: { icon: BookOpen, label: 'First Word', color: 'text-success' },
+  words5: { icon: GraduationCap, label: '5 Words', color: 'text-primary' },
 };
 
 const totalLetters = GESTURE_LIBRARY.length;

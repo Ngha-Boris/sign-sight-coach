@@ -5,6 +5,7 @@ import { WebcamFeed } from '@/components/sign-sight/WebcamFeed';
 import { FeedbackBar } from '@/components/sign-sight/FeedbackBar';
 import { ScorePanel } from '@/components/sign-sight/ScorePanel';
 import { VoiceCoach } from '@/components/sign-sight/VoiceCoach';
+import { WordPanel } from '@/components/sign-sight/WordPanel';
 import { useHandTracking } from '@/hooks/use-hand-tracking';
 import { useGame, type GameMode } from '@/hooks/use-game';
 
@@ -25,15 +26,40 @@ const Index = () => {
 
       <main className="flex-1 container mx-auto px-4 py-6">
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-          {/* Left panel — Reference & Score */}
+          {/* Left panel */}
           <div className="lg:col-span-2 space-y-4">
-            <GestureDisplay
-              currentLetter={game.currentLetter}
-              onSelectLetter={game.setCurrentLetter}
-              completedLetters={game.completedLetters}
-              mode={mode}
-              status={game.status}
-            />
+            {mode === 'words' ? (
+              <WordPanel
+                currentWord={game.currentWord}
+                wordIndex={game.wordIndex}
+                wordsCompleted={game.wordsCompleted}
+                wordActive={game.wordActive}
+                practiceTimer={game.practiceTimer}
+                practiceCorrect={game.practiceCorrect}
+                score={game.score}
+                onStartWord={game.startWordPractice}
+              />
+            ) : (
+              <GestureDisplay
+                currentLetter={game.currentLetter}
+                onSelectLetter={game.setCurrentLetter}
+                completedLetters={game.completedLetters}
+                mode={mode}
+                status={game.status}
+              />
+            )}
+
+            {/* Always show the current letter reference in word mode */}
+            {mode === 'words' && game.wordActive && (
+              <GestureDisplay
+                currentLetter={game.currentLetter}
+                onSelectLetter={() => {}}
+                completedLetters={game.completedLetters}
+                mode="practice"
+                status={game.status}
+              />
+            )}
+
             <ScorePanel
               score={game.score}
               streak={game.streak}

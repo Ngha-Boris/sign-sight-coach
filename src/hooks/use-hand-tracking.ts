@@ -84,9 +84,16 @@ export function useHandTracking() {
       });
       streamRef.current = stream;
 
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        await videoRef.current.play();
+      // Video element is always mounted, so ref should be available
+      const video = videoRef.current;
+      if (video) {
+        video.srcObject = stream;
+        // Wait for video to be ready
+        await new Promise<void>((resolve) => {
+          video.onloadedmetadata = () => resolve();
+          if (video.readyState >= 1) resolve();
+        });
+        await video.play();
       }
 
       setIsTracking(true);
